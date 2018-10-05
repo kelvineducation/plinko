@@ -1,6 +1,7 @@
 {
   "name": "plinko",
   "version": "0.1.0",
+  "main": "src/main.js",
   "scripts": {
     "build": "rollup -c",
     "watch": "concurrently 'rollup -c -w' 'rollup -c test/rollup.config.js -w'",
