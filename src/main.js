@@ -1,4 +1,6 @@
 import WindowDriver from './driver/window-driver.js';
+import ExtensionBackgroundDriver from './driver/extension-background-driver.js';
+import ExtensionTabDriver from './driver/extension-tab-driver.js';
 
 const receiveMessage = plinko => message => {
   const {messageType, callId} = message;
@@ -17,10 +19,9 @@ const receiveMessage = plinko => message => {
 };
 
 const Plinko = {
-  init(thisWindow, targetWindow, expectedOrigin, methods) {
+  init(driver, methods) {
     const plinko = Object.create(Plinko);
 
-    const driver = WindowDriver.init(thisWindow, targetWindow, expectedOrigin, methods);
     driver.setupListener(receiveMessage(plinko));
     Object.assign(plinko, {
       driver,
@@ -117,3 +118,26 @@ const Plinko = {
 };
 
 export default Plinko;
+export {Plinko};
+export const {WindowPlinko, ExtensionBackground, ExtensionTab} = {
+  WindowPlinko: {
+    init(methods, thisWindow, targetWindow, expectedOrigin) {
+      const driver = WindowDriver.init(thisWindow, targetWindow, expectedOrigin);
+      return Plinko.init(driver, methods);
+    }
+  },
+
+  ExtensionBackgroundPlinko: {
+    init(methods) {
+      const driver = ExtensionBackgroundDriver.init();
+      return Plinko.init(driver, methods);
+    }
+  },
+
+  ExtensionTabPlinko: {
+    init(methods, tabId) {
+      const driver = ExtensionTabDriver.init(tabId);
+      return Plinko.init(driver, methods);
+    }
+  }
+};

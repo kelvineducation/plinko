@@ -1,6 +1,6 @@
 import test from 'tape';
 import jsdom from 'jsdom';
-import Plinko from '../src/main.js';
+import {Plinko, WindowPlinko} from '../src/main.js';
 
 test('plinko can be instantiated', async t => {
   t.plan(1);
@@ -11,7 +11,7 @@ test('plinko can be instantiated', async t => {
   const parentWindow = parentDocument.window;
   const childWindow = childDocument.window;
 
-  const plinko = Plinko.init(parentWindow, childWindow, '*', {});
+  const plinko = WindowPlinko.init({}, parentWindow, childWindow, '*');
 
   t.equals(Object.isPrototypeOf.call(Plinko, plinko), true);
 });
@@ -25,15 +25,15 @@ test('plinko method in other window can be called', async t => {
   const parentWindow = parentDocument.window;
   const childWindow = childDocument.window;
 
-  Plinko.init(parentWindow, childWindow, '*', {
+  WindowPlinko.init({
     getUser() {
       return {
         gid: 12345,
         email: 'matt@example.org'
       };
     }
-  });
-  const childPlinko = Plinko.init(childWindow, parentWindow, '*', {});
+  }, parentWindow, childWindow, '*');
+  const childPlinko = WindowPlinko.init({}, childWindow, parentWindow, '*');
 
   try {
     const user = await childPlinko.call('getUser');
@@ -54,14 +54,14 @@ test('methods can call resolve asynchronously', async t => {
   const parentWindow = parentDocument.window;
   const childWindow = childDocument.window;
 
-  Plinko.init(parentWindow, childWindow, '*', {
+  WindowPlinko.init({
     whenYouAreReady(someValues) {
       return resolve => {
         resolve(someValues);
       };
     }
-  });
-  const childPlinko = Plinko.init(childWindow, parentWindow, '*', {});
+  }, parentWindow, childWindow, '*');
+  const childPlinko = WindowPlinko.init({}, childWindow, parentWindow, '*');
 
   try {
     t.deepEquals(
@@ -82,14 +82,14 @@ test('methods can call reject asynchronously', t => {
   const parentWindow = parentDocument.window;
   const childWindow = childDocument.window;
 
-  Plinko.init(parentWindow, childWindow, '*', {
+  WindowPlinko.init({
     whenYouAreReady() {
       return (resolve, reject) => {
         reject();
       };
     }
-  });
-  const childPlinko = Plinko.init(childWindow, parentWindow, '*', {});
+  }, parentWindow, childWindow, '*');
+  const childPlinko = WindowPlinko.init({}, childWindow, parentWindow, '*');
 
   childPlinko.call('whenYouAreReady', [1, 2, 3]).catch(() => {
     t.equals(true, true);
@@ -105,7 +105,7 @@ test('methods can return promises', async t => {
   const parentWindow = parentDocument.window;
   const childWindow = childDocument.window;
 
-  const parentPlinko = Plinko.init(parentWindow, childWindow, '*', {
+  const parentPlinko = WindowPlinko.init({
     async pingPong(count) {
       if (count <= 0) {
         return 0;
@@ -113,8 +113,8 @@ test('methods can return promises', async t => {
 
       return count + await parentPlinko.call('pingPong', count - 1);
     }
-  });
-  const childPlinko = Plinko.init(childWindow, parentWindow, '*', {
+  }, parentWindow, childWindow, '*');
+  const childPlinko = WindowPlinko.init({
     async pingPong(count) {
       if (count <= 0) {
         return 0;
@@ -122,7 +122,7 @@ test('methods can return promises', async t => {
 
       return (2 * count) + await childPlinko.call('pingPong', count - 1);
     }
-  });
+  }, childWindow, parentWindow, '*');
 
   try {
     const count = await childPlinko.call('pingPong', 5);
@@ -142,8 +142,8 @@ test('undefined method causes rejection', async t => {
   const parentWindow = parentDocument.window;
   const childWindow = childDocument.window;
 
-  Plinko.init(parentWindow, childWindow, '*', {});
-  const childPlinko = Plinko.init(childWindow, parentWindow, '*', {});
+  WindowPlinko.init({}, parentWindow, childWindow, '*');
+  const childPlinko = WindowPlinko.init({}, childWindow, parentWindow, '*');
 
   childPlinko.call('whenYouAreReady', [1, 2, 3]).catch(() => {
     t.equals(true, true);

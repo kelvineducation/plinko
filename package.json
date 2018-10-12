@@ -21,6 +21,8 @@
   "xo": {
     "space": 2,
     "globals": [
+      "browser",
+      "chrome",
       "window"
     ]
   }
