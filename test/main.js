@@ -35,9 +35,14 @@ test('plinko method in other window can be called', async t => {
   });
   const childPlinko = Plinko.init(childWindow, parentWindow, '*', {});
 
-  const user = await childPlinko.call('getUser');
-  t.equals(user.gid, 12345);
-  t.equals(user.email, 'matt@example.org');
+  try {
+    const user = await childPlinko.call('getUser');
+    t.equals(user.gid, 12345);
+    t.equals(user.email, 'matt@example.org');
+  } catch (exception) {
+    console.error(exception, exception.stack);
+    t.fail();
+  }
 });
 
 test('methods can call resolve asynchronously', async t => {
@@ -58,10 +63,14 @@ test('methods can call resolve asynchronously', async t => {
   });
   const childPlinko = Plinko.init(childWindow, parentWindow, '*', {});
 
-  t.deepEquals(
-    await childPlinko.call('whenYouAreReady', [1, 2, 3]),
-    [1, 2, 3]
-  );
+  try {
+    t.deepEquals(
+      await childPlinko.call('whenYouAreReady', [1, 2, 3]),
+      [1, 2, 3]
+    );
+  } catch (exception) {
+    console.error(exception, exception.stack);
+  }
 });
 
 test('methods can call reject asynchronously', t => {
@@ -115,9 +124,13 @@ test('methods can return promises', async t => {
     }
   });
 
-  const count = await childPlinko.call('pingPong', 5);
-  // 5 + 4 * 2 + 3 + 2 * 2 + 1 = 31
-  t.equals(21, count);
+  try {
+    const count = await childPlinko.call('pingPong', 5);
+    // 5 + 4 * 2 + 3 + 2 * 2 + 1 = 31
+    t.equals(21, count);
+  } catch (exception) {
+    console.error(exception, exception.stack);
+  }
 });
 
 test('undefined method causes rejection', async t => {

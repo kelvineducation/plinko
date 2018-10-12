@@ -1,17 +1,58 @@
+const WindowDriver = {
+  init(thisWindow, targetWindow, expectedOrigin) {
+    const driver = Object.create(WindowDriver);
+
+    Object.assign(driver, {
+      window: thisWindow,
+      targetWindow,
+      expectedOrigin
+    });
+
+    return driver;
+  },
+
+  setupListener(receiveMessage) {
+    this.window.addEventListener('message', event => {
+      if (this.expectedOrigin !== '*' && this.expectedOrigin !== event.origin) {
+        return;
+      }
+
+      receiveMessage(event.data);
+    });
+  },
+
+  sendMessage(message) {
+    this.targetWindow.postMessage(message, this.expectedOrigin);
+  }
+};
+
+const receiveMessage = plinko => message => {
+  const {messageType, callId} = message;
+  if (!messageType || !callId) {
+    return;
+  }
+
+  if (messageType === 'request') {
+    plinko.handleRequest(message);
+    return;
+  }
+
+  if (messageType === 'response') {
+    plinko.handleResponse(message);
+  }
+};
+
 const Plinko = {
   init(thisWindow, targetWindow, expectedOrigin, methods) {
     const plinko = Object.create(Plinko);
 
+    const driver = WindowDriver.init(thisWindow, targetWindow, expectedOrigin, methods);
+    driver.setupListener(receiveMessage(plinko));
     Object.assign(plinko, {
-      window: thisWindow,
-      targetWindow,
-      expectedOrigin,
-      methods
+      driver,
+      methods,
+      pendingCalls: {}
     });
-
-    plinko.pendingCalls = {};
-
-    thisWindow.addEventListener('message', plinko.listen());
 
     return plinko;
   },
@@ -26,29 +67,23 @@ const Plinko = {
       this.pendingCalls[callId] = {resolve, reject};
     });
 
-    this.targetWindow.postMessage(
-      {
-        messageType: 'request',
-        callId,
-        method,
-        args
-      },
-      this.expectedOrigin
-    );
+    this.driver.sendMessage({
+      messageType: 'request',
+      callId,
+      method,
+      args
+    });
 
     return promise;
   },
 
   closeRequest(callId, rejected, returnValue) {
-    this.targetWindow.postMessage(
-      {
-        messageType: 'response',
-        callId,
-        rejected,
-        returnValue
-      },
-      this.expectedOrigin
-    );
+    this.driver.sendMessage({
+      messageType: 'response',
+      callId,
+      rejected,
+      returnValue
+    });
   },
 
   resolveRequest(callId, returnValue) {
@@ -59,8 +94,8 @@ const Plinko = {
     this.closeRequest(callId, true, null);
   },
 
-  handleRequest(event) {
-    const {callId, method, args} = event.data;
+  handleRequest(message) {
+    const {callId, method, args} = message;
 
     if (typeof this.methods[method] !== 'function') {
       this.rejectRequest(callId);
@@ -88,8 +123,8 @@ const Plinko = {
     this.resolveRequest(callId, initialReturn);
   },
 
-  handleResponse(event) {
-    const {callId, rejected, returnValue} = event.data;
+  handleResponse(message) {
+    const {callId, rejected, returnValue} = message;
 
     if (!this.pendingCalls[callId]) {
       return;
@@ -104,28 +139,6 @@ const Plinko = {
     pendingCall.resolve(returnValue);
 
     delete this.pendingCalls[callId];
-  },
-
-  listen() {
-    return event => {
-      if (this.expectedOrigin !== '*' && this.expectedOrigin !== event.origin) {
-        return;
-      }
-
-      const {messageType, callId} = event.data;
-      if (!messageType || !callId) {
-        return;
-      }
-
-      if (messageType === 'request') {
-        this.handleRequest(event);
-        return;
-      }
-
-      if (messageType === 'response') {
-        this.handleResponse(event);
-      }
-    };
   }
 };
 
