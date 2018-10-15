@@ -18,14 +18,29 @@ const receiveMessage = plinko => message => {
   }
 };
 
+const callId = (method, args) => {
+  const rand = Math.random().toString(36).substring(2);
+  const time = Date.now();
+
+  return `plinko-${method}-${rand}-${time}`;
+};
+
 const Plinko = {
-  init(driver, methods) {
+  init(driver, methods, options) {
     const plinko = Object.create(Plinko);
+
+    options = Object.assign(
+      {
+        callId
+      },
+      options
+    );
 
     driver.setupListener(receiveMessage(plinko));
     Object.assign(plinko, {
       driver,
       methods,
+      options,
       pendingCalls: {}
     });
 
@@ -33,11 +48,7 @@ const Plinko = {
   },
 
   call(method, ...args) {
-    const rand = Math.random().toString(36).substring(2);
-    const time = Date.now();
-
-    const callId = `plinko-${method}-${rand}-${time}`;
-
+    const callId = this.options.callId(method);
     const promise = new Promise((resolve, reject) => {
       this.pendingCalls[callId] = {resolve, reject};
     });
