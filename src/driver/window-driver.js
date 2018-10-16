@@ -1,10 +1,9 @@
 const WindowDriver = {
-  init(thisWindow, targetWindow, expectedOrigin) {
+  init(thisWindow, expectedOrigin) {
     const driver = Object.create(WindowDriver);
 
     Object.assign(driver, {
       window: thisWindow || window,
-      targetWindow,
       expectedOrigin: expectedOrigin || location.origin
     });
 
@@ -17,12 +16,12 @@ const WindowDriver = {
         return;
       }
 
-      receiveMessage(event.data);
+      receiveMessage(event.source, event.data);
     });
   },
 
-  sendMessage(message) {
-    this.targetWindow.postMessage(message, this.expectedOrigin);
+  sendMessage(target, message) {
+    target.postMessage(message, this.expectedOrigin);
   }
 };
 

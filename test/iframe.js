@@ -10,7 +10,7 @@ import {WindowPlinko} from '../src/main.js';
 
       return previousTitle;
     }
-  }, window, window.parent);
+  });
 
   const checkUserInfo = userInfo => {
     if (!userInfo) {
@@ -31,10 +31,12 @@ import {WindowPlinko} from '../src/main.js';
     return true;
   };
 
-  const userInfo = await plinko.call(
+  const parentPlinko = plinko.target(window.parent);
+
+  const userInfo = await parentPlinko.call(
     'get-user-info',
     {id: 12345, name: 'matt'}
   );
   const status = checkUserInfo(userInfo);
-  plinko.call('set-child-status', status);
+  parentPlinko.call('set-child-status', status);
 })();

@@ -1,11 +1,11 @@
-const receiveMessage = plinko => message => {
+const receiveMessage = plinko => (source, message) => {
   const {messageType, callId} = message;
   if (!messageType || !callId) {
     return;
   }
 
   if (messageType === 'request') {
-    plinko.handleRequest(message);
+    plinko.handleRequest({source, message});
     return;
   }
 
@@ -43,13 +43,13 @@ const Plinko = {
     return plinko;
   },
 
-  call(method, ...args) {
+  call(target, method, ...args) {
     const callId = this.options.callId(method);
     const promise = new Promise((resolve, reject) => {
       this.pendingCalls[callId] = {resolve, reject};
     });
 
-    this.driver.sendMessage({
+    this.driver.sendMessage(target, {
       messageType: 'request',
       callId,
       method,
@@ -59,8 +59,17 @@ const Plinko = {
     return promise;
   },
 
-  closeRequest(callId, rejected, returnValue) {
-    this.driver.sendMessage({
+  target(target) {
+    return {
+      call: (method, ...args) => {
+        return this.call(target, method, ...args);
+      }
+    }
+  },
+
+  closeRequest(request, rejected, returnValue) {
+    const {source: target, message: {callId}} = request;
+    this.driver.sendMessage(target, {
       messageType: 'response',
       callId,
       rejected,
@@ -68,19 +77,19 @@ const Plinko = {
     });
   },
 
-  resolveRequest(callId, returnValue) {
-    this.closeRequest(callId, false, returnValue);
+  resolveRequest(request, returnValue) {
+    this.closeRequest(request, false, returnValue);
   },
 
-  rejectRequest(callId) {
-    this.closeRequest(callId, true, null);
+  rejectRequest(request) {
+    this.closeRequest(request, true, null);
   },
 
-  handleRequest(message) {
-    const {callId, method, args} = message;
+  handleRequest(request) {
+    const {source, message: {method, args}} = request;
 
     if (typeof this.methods[method] !== 'function') {
-      this.rejectRequest(callId);
+      this.rejectRequest(request);
       return;
     }
 
@@ -88,21 +97,21 @@ const Plinko = {
 
     if (typeof initialReturn === 'function') {
       initialReturn(
-        returnValue => this.resolveRequest(callId, returnValue),
-        () => this.rejectRequest(callId)
+        returnValue => this.resolveRequest(request, returnValue),
+        () => this.rejectRequest(request)
       );
       return;
     }
 
     if (initialReturn instanceof Promise) {
       initialReturn.then(
-        returnValue => this.resolveRequest(callId, returnValue),
-        () => this.rejectRequest(callId)
+        returnValue => this.resolveRequest(request, returnValue),
+        () => this.rejectRequest(request)
       );
       return;
     }
 
-    this.resolveRequest(callId, initialReturn);
+    this.resolveRequest(request, initialReturn);
   },
 
   handleResponse(message) {

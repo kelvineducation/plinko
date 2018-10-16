@@ -1,7 +1,5 @@
 import {WindowPlinko} from '../src/main.js';
 
-const iframe = document.getElementById('iframe');
-
 const plinko = WindowPlinko.init({
   'get-user-info': ({id, name}) => {
     return {
@@ -11,7 +9,10 @@ const plinko = WindowPlinko.init({
   },
 
   'set-child-status': async status => {
-    const previousTitle = await plinko.call('set-title', 'Frame Done');
+    const iframe = document.getElementById('iframe');
+    const childPlinko = plinko.target(iframe.contentWindow);
+
+    const previousTitle = await childPlinko.call('set-title', 'Frame Done');
     if (previousTitle !== 'Frame Running') {
       document.getElementById('title').textContent = 'Failed';
       return;
@@ -19,4 +20,4 @@ const plinko = WindowPlinko.init({
 
     document.getElementById('title').textContent = 'Passed';
   }
-}, window, iframe.contentWindow);
+});

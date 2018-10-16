@@ -7,8 +7,8 @@ export default Plinko;
 export {Plinko};
 export const {WindowPlinko, ExtensionBackground, ExtensionTab} = {
   WindowPlinko: {
-    init(methods, thisWindow, targetWindow, expectedOrigin) {
-      const driver = WindowDriver.init(thisWindow, targetWindow, expectedOrigin);
+    init(methods, thisWindow, expectedOrigin) {
+      const driver = WindowDriver.init(thisWindow, expectedOrigin);
       return Plinko.init(driver, methods);
     }
   },
