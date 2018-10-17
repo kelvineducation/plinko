@@ -24,6 +24,7 @@
     "globals": [
       "browser",
       "chrome",
+      "document",
       "window"
     ]
   },

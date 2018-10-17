@@ -1,4 +1,4 @@
-const sendRuntimeMessage = function(target, message) {
+const sendRuntimeMessage = function (target, message) {
   this.browser.runtime.sendMessage({
     sourceScriptType: this.scriptType,
     targetScriptType: target,
@@ -6,7 +6,7 @@ const sendRuntimeMessage = function(target, message) {
   });
 };
 
-const sendTabMessage = function(target, message) {
+const sendTabMessage = function (target, message) {
   this.browser.tabs.sendMessage(target, {
     sourceScriptType: this.scriptType,
     targetScriptType: this.TYPE_CONTENT,
@@ -15,9 +15,9 @@ const sendTabMessage = function(target, message) {
 };
 
 const ExtensionDriver = {
-  TYPE_BACKGROUND:  'background',
-  TYPE_CONTENT:     'content',
-  TYPE_POPUP:       'popup',
+  TYPE_BACKGROUND: 'background',
+  TYPE_CONTENT: 'content',
+  TYPE_POPUP: 'popup',
 
   init(scriptType) {
     const driver = Object.create(ExtensionDriver);

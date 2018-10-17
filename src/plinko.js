@@ -14,7 +14,7 @@ const receiveMessage = plinko => (source, message) => {
   }
 };
 
-const callId = (method, args) => {
+const callId = method => {
   const rand = Math.random().toString(36).substring(2);
   const time = Date.now();
 
@@ -64,7 +64,7 @@ const Plinko = {
       call: (method, ...args) => {
         return this.call(target, method, ...args);
       }
-    }
+    };
   },
 
   closeRequest(request, rejected, returnValue) {
@@ -86,7 +86,7 @@ const Plinko = {
   },
 
   handleRequest(request) {
-    const {source, message: {method, args}} = request;
+    const {message: {method, args}} = request;
 
     if (typeof this.methods[method] !== 'function') {
       this.rejectRequest(request);

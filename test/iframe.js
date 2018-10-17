@@ -14,7 +14,7 @@ import {WindowPlinko} from '../src/main.js';
 
   const checkUserInfo = userInfo => {
     if (!userInfo) {
-      console.error(`userInfo returned was blank`);
+      console.error('userInfo returned was blank');
       return false;
     }
 

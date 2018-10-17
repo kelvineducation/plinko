@@ -8,7 +8,7 @@ const plinko = WindowPlinko.init({
     };
   },
 
-  'set-child-status': async status => {
+  'set-child-status': async () => {
     const iframe = document.getElementById('iframe');
     const childPlinko = plinko.target(iframe.contentWindow);
 

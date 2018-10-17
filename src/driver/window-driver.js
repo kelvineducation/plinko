@@ -2,9 +2,10 @@ const WindowDriver = {
   init(thisWindow, expectedOrigin) {
     const driver = Object.create(WindowDriver);
 
+    thisWindow = thisWindow || window;
     Object.assign(driver, {
-      window: thisWindow || window,
-      expectedOrigin: expectedOrigin || location.origin
+      window: thisWindow,
+      expectedOrigin: expectedOrigin || thisWindow.location.origin
     });
 
     return driver;
