@@ -34,5 +34,44 @@ export default [{
       'test/**'
     ]
   }
+}, {
+  input: 'test/background.js',
+  output: {
+    file: 'dist/test/background.js',
+    format: 'cjs',
+    sourcemap: true
+  },
+  watch: {
+    include: [
+      'src/**',
+      'test/**'
+    ]
+  }
+}, {
+  input: 'test/content.js',
+  output: {
+    file: 'dist/test/content.js',
+    format: 'cjs',
+    sourcemap: true
+  },
+  watch: {
+    include: [
+      'src/**',
+      'test/**'
+    ]
+  }
+}, {
+  input: 'test/popup.js',
+  output: {
+    file: 'dist/test/popup.js',
+    format: 'cjs',
+    sourcemap: true
+  },
+  watch: {
+    include: [
+      'src/**',
+      'test/**'
+    ]
+  }
 }];
 

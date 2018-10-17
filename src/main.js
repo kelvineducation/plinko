@@ -1,11 +1,15 @@
 import Plinko from './plinko.js';
 import WindowDriver from './driver/window-driver.js';
-import ExtensionBackgroundDriver from './driver/extension-background-driver.js';
-import ExtensionTabDriver from './driver/extension-tab-driver.js';
+import ExtensionDriver from './driver/extension-driver.js';
 
 export default Plinko;
 export {Plinko};
-export const {WindowPlinko, ExtensionBackground, ExtensionTab} = {
+export const {
+  WindowPlinko,
+  ExtensionBackgroundPlinko,
+  ExtensionContentPlinko,
+  ExtensionPopupPlinko
+} = {
   WindowPlinko: {
     init(methods, thisWindow, expectedOrigin) {
       const driver = WindowDriver.init(thisWindow, expectedOrigin);
@@ -15,14 +19,21 @@ export const {WindowPlinko, ExtensionBackground, ExtensionTab} = {
 
   ExtensionBackgroundPlinko: {
     init(methods) {
-      const driver = ExtensionBackgroundDriver.init();
+      const driver = ExtensionDriver.init(ExtensionDriver.TYPE_BACKGROUND);
       return Plinko.init(driver, methods);
     }
   },
 
-  ExtensionTabPlinko: {
-    init(methods, tabId) {
-      const driver = ExtensionTabDriver.init(tabId);
+  ExtensionContentPlinko: {
+    init(methods) {
+      const driver = ExtensionDriver.init(ExtensionDriver.TYPE_CONTENT);
+      return Plinko.init(driver, methods);
+    }
+  },
+
+  ExtensionPopupPlinko: {
+    init(methods) {
+      const driver = ExtensionDriver.init(ExtensionDriver.TYPE_POPUP);
       return Plinko.init(driver, methods);
     }
   }

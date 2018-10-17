@@ -5,7 +5,7 @@
   "scripts": {
     "build": "rm -rf dist/ && npm run build:rollup && npm run build:test",
     "build:rollup": "rollup -c",
-    "build:test": "mkdir -p dist/test && cd test && cp -a *.html ../dist/test",
+    "build:test": "mkdir -p dist/test && cd test && cp -a *.html *.json ../dist/test",
     "watch": "concurrently --raw 'npm:watch:*'",
     "watch:rollup": "rollup -c -w",
     "watch:test": "npm-watch build:test"
@@ -33,6 +33,7 @@
         "test"
       ],
       "extensions": [
+        "json",
         "html"
       ],
       "quiet": false
