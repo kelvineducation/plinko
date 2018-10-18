@@ -1,5 +1,5 @@
 const WindowDriver = {
-  init(thisWindow, expectedOrigin) {
+  init(expectedOrigin, thisWindow) {
     const driver = Object.create(WindowDriver);
 
     thisWindow = thisWindow || window;

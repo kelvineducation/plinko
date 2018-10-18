@@ -11,8 +11,8 @@ export const {
   ExtensionPopupPlinko
 } = {
   WindowPlinko: {
-    init(methods, thisWindow, expectedOrigin) {
-      const driver = WindowDriver.init(thisWindow, expectedOrigin);
+    init(methods, expectedOrigin, thisWindow) {
+      const driver = WindowDriver.init(expectedOrigin, thisWindow);
       return Plinko.init(driver, methods);
     }
   },
