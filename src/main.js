@@ -11,30 +11,30 @@ export const {
   ExtensionPopupPlinko
 } = {
   WindowPlinko: {
-    init(methods, expectedOrigin, thisWindow) {
-      const driver = WindowDriver.init(expectedOrigin, thisWindow);
-      return Plinko.init(driver, methods);
+    init(methods, expectedOrigin, plinkoOptions) {
+      const driver = WindowDriver.init(expectedOrigin);
+      return Plinko.init(driver, methods, plinkoOptions);
     }
   },
 
   ExtensionBackgroundPlinko: {
-    init(methods) {
+    init(methods, plinkoOptions) {
       const driver = ExtensionDriver.init(ExtensionDriver.TYPE_BACKGROUND);
-      return Plinko.init(driver, methods);
+      return Plinko.init(driver, methods, plinkoOptions);
     }
   },
 
   ExtensionContentPlinko: {
-    init(methods) {
+    init(methods, plinkoOptions) {
       const driver = ExtensionDriver.init(ExtensionDriver.TYPE_CONTENT);
-      return Plinko.init(driver, methods);
+      return Plinko.init(driver, methods, plinkoOptions);
     }
   },
 
   ExtensionPopupPlinko: {
-    init(methods) {
+    init(methods, plinkoOptions) {
       const driver = ExtensionDriver.init(ExtensionDriver.TYPE_POPUP);
-      return Plinko.init(driver, methods);
+      return Plinko.init(driver, methods, plinkoOptions);
     }
   }
 };

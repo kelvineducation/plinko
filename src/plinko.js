@@ -27,7 +27,8 @@ const Plinko = {
 
     options = Object.assign(
       {
-        callId
+        callId,
+        thisArg: null
       },
       options
     );
@@ -93,7 +94,7 @@ const Plinko = {
       return;
     }
 
-    const initialReturn = this.methods[method].apply(null, args);
+    const initialReturn = this.methods[method].apply(this.options.thisArg, args);
 
     if (typeof initialReturn === 'function') {
       initialReturn(
