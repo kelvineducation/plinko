@@ -30,6 +30,25 @@ const ExtensionDriver = {
     return driver;
   },
 
+  resolveTargets(targetFilter) {
+    if (Array.isArray(targetFilter)) {
+      return targetFilter;
+    }
+
+    if (typeof targetFilter === 'object') {
+      const targets = [];
+      chrome.tabs.query(targetFilter, tabs => {
+        for (const tab of tabs) {
+          targets.push(tab.id);
+        }
+      });
+
+      return targets;
+    }
+
+    return [targetFilter];
+  },
+
   setupListener(receiveMessage) {
     this.browser.runtime.onMessage.addListener((message, sender) => {
       if (this.scriptType !== message.targetScriptType) {

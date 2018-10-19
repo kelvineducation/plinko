@@ -44,20 +44,31 @@ const Plinko = {
     return plinko;
   },
 
-  call(target, method, ...args) {
-    const callId = this.options.callId(method);
-    const promise = new Promise((resolve, reject) => {
-      this.pendingCalls[callId] = {resolve, reject};
-    });
+  call(targetFilter, method, ...args) {
+    const targets = this.driver.resolveTargets(targetFilter);
 
-    this.driver.sendMessage(target, {
-      messageType: 'request',
-      callId,
-      method,
-      args
-    });
+    const promises = [];
+    for (const target of targets) {
+      const callId = this.options.callId(method);
+      const promise = new Promise((resolve, reject) => {
+        this.pendingCalls[callId] = {resolve, reject};
+      });
 
-    return promise;
+      this.driver.sendMessage(target, {
+        messageType: 'request',
+        callId,
+        method,
+        args
+      });
+
+      promises.push(promise);
+    }
+
+    if (!Array.isArray(targetFilter)) {
+      return promises[0];
+    }
+
+    return Promise.all(promises);
   },
 
   target(target) {

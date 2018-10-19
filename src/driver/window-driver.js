@@ -11,6 +11,14 @@ const WindowDriver = {
     return driver;
   },
 
+  resolveTargets(targetFilter) {
+    if (Array.isArray(targetFilter)) {
+      return targetFilter;
+    }
+
+    return [targetFilter];
+  },
+
   setupListener(receiveMessage) {
     this.window.addEventListener('message', event => {
       if (this.expectedOrigin !== '*' && this.expectedOrigin !== event.origin) {
