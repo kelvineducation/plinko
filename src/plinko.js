@@ -70,6 +70,15 @@ const Plinko = {
 
   closeRequest(request, rejected, returnValue) {
     const {source: target, message: {callId}} = request;
+
+    if (returnValue instanceof Error) {
+      returnValue = {
+        objectType: 'error',
+        message: returnValue.message,
+        stack: returnValue.stack
+      };
+    }
+
     this.driver.sendMessage(target, {
       messageType: 'response',
       callId,
@@ -82,15 +91,16 @@ const Plinko = {
     this.closeRequest(request, false, returnValue);
   },
 
-  rejectRequest(request) {
-    this.closeRequest(request, true, null);
+  rejectRequest(request, returnValue) {
+    this.closeRequest(request, true, returnValue);
   },
 
   handleRequest(request) {
     const {message: {method, args}} = request;
 
     if (typeof this.methods[method] !== 'function') {
-      this.rejectRequest(request);
+      const error = new Error(`Unknown method '${method}' called via Plinko.`);
+      this.rejectRequest(request, error);
       return;
     }
 
@@ -99,7 +109,7 @@ const Plinko = {
     if (typeof initialReturn === 'function') {
       initialReturn(
         returnValue => this.resolveRequest(request, returnValue),
-        () => this.rejectRequest(request)
+        returnValue => this.rejectRequest(request, returnValue)
       );
       return;
     }
@@ -107,7 +117,7 @@ const Plinko = {
     if (initialReturn instanceof Promise) {
       initialReturn.then(
         returnValue => this.resolveRequest(request, returnValue),
-        () => this.rejectRequest(request)
+        returnValue => this.rejectRequest(request, returnValue)
       );
       return;
     }
@@ -124,7 +134,7 @@ const Plinko = {
 
     const pendingCall = this.pendingCalls[callId];
     if (rejected) {
-      pendingCall.reject();
+      pendingCall.reject(returnValue);
       return;
     }
 
