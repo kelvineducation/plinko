@@ -12,11 +12,7 @@ const WindowDriver = {
   },
 
   resolveTargets(targetFilter) {
-    if (Array.isArray(targetFilter)) {
-      return targetFilter;
-    }
-
-    return [targetFilter];
+    return targetFilter;
   },
 
   setupListener(receiveMessage) {

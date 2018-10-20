@@ -10,13 +10,12 @@ const Background = {
     return bg;
   },
 
-  status(passed, failed) {
-    return new Promise(resolve => {
-      chrome.tabs.query({active: true}, async ([tab]) => {
-        const tabStatus = await this.plinko.call(tab.id, 'tab-status', this.token);
-        resolve(tabStatus ? passed : failed);
-      });
-    });
+  async status(passed, failed) {
+    const tabCriteria = {active: true};
+    const statuses = await this.plinko.call(tabCriteria, 'tab-status', this.token);
+    const allSuccess = statuses.every(status => status);
+
+    return allSuccess ? passed : failed;
   },
 
   'verify-token'(token) {

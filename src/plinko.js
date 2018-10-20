@@ -44,8 +44,13 @@ const Plinko = {
     return plinko;
   },
 
-  call(targetFilter, method, ...args) {
-    const targets = this.driver.resolveTargets(targetFilter);
+  async call(targetFilter, method, ...args) {
+    let targets = await this.driver.resolveTargets(targetFilter);
+    let singleResponse = false;
+    if (!Array.isArray(targets)) {
+      targets = [targets];
+      singleResponse = true;
+    }
 
     const promises = [];
     for (const target of targets) {
@@ -64,7 +69,7 @@ const Plinko = {
       promises.push(promise);
     }
 
-    if (!Array.isArray(targetFilter)) {
+    if (singleResponse) {
       return promises[0];
     }
 

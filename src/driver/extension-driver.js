@@ -30,23 +30,25 @@ const ExtensionDriver = {
     return driver;
   },
 
-  resolveTargets(targetFilter) {
+  async resolveTargets(targetFilter) {
     if (Array.isArray(targetFilter)) {
       return targetFilter;
     }
 
-    if (typeof targetFilter === 'object') {
+    if (typeof targetFilter !== 'object') {
+      return targetFilter;
+    }
+
+    return new Promise(resolve => {
       const targets = [];
-      chrome.tabs.query(targetFilter, tabs => {
+      this.browser.tabs.query(targetFilter, tabs => {
         for (const tab of tabs) {
           targets.push(tab.id);
         }
+
+        resolve(targets);
       });
-
-      return targets;
-    }
-
-    return [targetFilter];
+    });
   },
 
   setupListener(receiveMessage) {
