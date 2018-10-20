@@ -11,8 +11,13 @@ const Background = {
   },
 
   async status(passed, failed) {
-    const tabCriteria = {active: true};
-    const statuses = await this.plinko.call(tabCriteria, 'tab-status', this.token);
+    const tabCriteria = {};
+    const method = {
+      name: 'tab-status',
+      timeout: 1000,
+      timeoutCallback: resolve => resolve(true)
+    };
+    const statuses = await this.plinko.call(tabCriteria, method, this.token);
     const allSuccess = statuses.every(status => status);
 
     return allSuccess ? passed : failed;

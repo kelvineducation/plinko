@@ -52,17 +52,42 @@ const Plinko = {
       singleResponse = true;
     }
 
+    const methodName = method.name || method;
+    const timeout = method.timeout || 60000;
+    const timeoutCallback = method.timeoutCallback || function (resolve, reject) {
+      reject(new Error(`Method '${methodName}' timed out after ${timeout}ms`));
+    };
+    const clearTimer = timer => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+
     const promises = [];
     for (const target of targets) {
-      const callId = this.options.callId(method);
+      const callId = this.options.callId(methodName);
       const promise = new Promise((resolve, reject) => {
-        this.pendingCalls[callId] = {resolve, reject};
+        let timer;
+        if (timeout) {
+          timer = setTimeout(() => timeoutCallback(resolve, reject), timeout);
+        }
+
+        this.pendingCalls[callId] = {
+          resolve(value) {
+            clearTimer(timer);
+            resolve(value);
+          },
+          reject(value) {
+            clearTimer(timer);
+            reject(value);
+          }
+        };
       });
 
       this.driver.sendMessage(target, {
         messageType: 'request',
         callId,
-        method,
+        method: methodName,
         args
       });
 
