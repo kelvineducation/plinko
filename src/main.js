@@ -1,132 +1,40 @@
-const Plinko = {
-  init(thisWindow, targetWindow, expectedOrigin, methods) {
-    const plinko = Object.create(Plinko);
-
-    Object.assign(plinko, {
-      window: thisWindow,
-      targetWindow,
-      expectedOrigin,
-      methods
-    });
-
-    plinko.pendingCalls = {};
-
-    thisWindow.addEventListener('message', plinko.listen());
-
-    return plinko;
-  },
-
-  call(method, ...args) {
-    const rand = Math.random().toString(36).substring(2);
-    const time = Date.now();
-
-    const callId = `plinko-${method}-${rand}-${time}`;
-
-    const promise = new Promise((resolve, reject) => {
-      this.pendingCalls[callId] = {resolve, reject};
-    });
-
-    this.targetWindow.postMessage(
-      {
-        messageType: 'request',
-        callId,
-        method,
-        args
-      },
-      this.expectedOrigin
-    );
-
-    return promise;
-  },
-
-  closeRequest(callId, rejected, returnValue) {
-    this.targetWindow.postMessage(
-      {
-        messageType: 'response',
-        callId,
-        rejected,
-        returnValue
-      },
-      this.expectedOrigin
-    );
-  },
-
-  resolveRequest(callId, returnValue) {
-    this.closeRequest(callId, false, returnValue);
-  },
-
-  rejectRequest(callId) {
-    this.closeRequest(callId, true, null);
-  },
-
-  handleRequest(event) {
-    const {callId, method, args} = event.data;
-
-    if (typeof this.methods[method] !== 'function') {
-      this.rejectRequest(callId);
-      return;
-    }
-
-    const initialReturn = this.methods[method].apply(null, args);
-
-    if (typeof initialReturn === 'function') {
-      initialReturn(
-        returnValue => this.resolveRequest(callId, returnValue),
-        () => this.rejectRequest(callId)
-      );
-      return;
-    }
-
-    if (initialReturn instanceof Promise) {
-      initialReturn.then(
-        returnValue => this.resolveRequest(callId, returnValue),
-        () => this.rejectRequest(callId)
-      );
-      return;
-    }
-
-    this.resolveRequest(callId, initialReturn);
-  },
-
-  handleResponse(event) {
-    const {callId, rejected, returnValue} = event.data;
-
-    if (!this.pendingCalls[callId]) {
-      return;
-    }
-
-    const pendingCall = this.pendingCalls[callId];
-    if (rejected) {
-      pendingCall.reject();
-      return;
-    }
-
-    pendingCall.resolve(returnValue);
-
-    delete this.pendingCalls[callId];
-  },
-
-  listen() {
-    return event => {
-      if (this.expectedOrigin !== '*' && this.expectedOrigin !== event.origin) {
-        return;
-      }
-
-      const {messageType, callId} = event.data;
-      if (!messageType || !callId) {
-        return;
-      }
-
-      if (messageType === 'request') {
-        this.handleRequest(event);
-        return;
-      }
-
-      if (messageType === 'response') {
-        this.handleResponse(event);
-      }
-    };
-  }
-};
+import Plinko from './plinko.js';
+import WindowDriver from './driver/window-driver.js';
+import ExtensionDriver from './driver/extension-driver.js';
 
 export default Plinko;
+export {Plinko};
+export const {
+  WindowPlinko,
+  ExtensionBackgroundPlinko,
+  ExtensionContentPlinko,
+  ExtensionPopupPlinko
+} = {
+  WindowPlinko: {
+    init(methods, expectedOrigin, plinkoOptions) {
+      const driver = WindowDriver.init(expectedOrigin);
+      return Plinko.init(driver, methods, plinkoOptions);
+    }
+  },
+
+  ExtensionBackgroundPlinko: {
+    init(methods, plinkoOptions) {
+      const driver = ExtensionDriver.init(ExtensionDriver.TYPE_BACKGROUND);
+      return Plinko.init(driver, methods, plinkoOptions);
+    }
+  },
+
+  ExtensionContentPlinko: {
+    init(methods, plinkoOptions) {
+      const driver = ExtensionDriver.init(ExtensionDriver.TYPE_CONTENT);
+      return Plinko.init(driver, methods, plinkoOptions);
+    }
+  },
+
+  ExtensionPopupPlinko: {
+    init(methods, plinkoOptions) {
+      const driver = ExtensionDriver.init(ExtensionDriver.TYPE_POPUP);
+      return Plinko.init(driver, methods, plinkoOptions);
+    }
+  }
+};
