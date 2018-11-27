@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "concurrently": "^4.0.1",
+    "event-stream": "3.3.4",
     "npm-watch": "^0.3.0",
     "rollup": "^0.64.1"
   },
