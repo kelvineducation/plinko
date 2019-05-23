@@ -15,9 +15,7 @@
     "npm-watch": "^0.5.0",
     "rollup": "^0.64.1"
   },
-  "dependencies": {
-    "npm": "^6.4.0"
-  },
+  "dependencies": {},
   "private": true,
   "xo": {
     "space": 2,
