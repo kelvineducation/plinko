@@ -174,14 +174,14 @@ const Plinko = {
     }
 
     const pendingCall = this.pendingCalls[callId];
+    delete this.pendingCalls[callId];
+
     if (rejected) {
       pendingCall.reject(returnValue);
       return;
     }
 
     pendingCall.resolve(returnValue);
-
-    delete this.pendingCalls[callId];
   }
 };
 
