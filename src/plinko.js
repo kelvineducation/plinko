@@ -109,6 +109,10 @@ const Plinko = {
     };
   },
 
+  dispose() {
+    this.driver.dispose();
+  },
+
   closeRequest(request, rejected, returnValue) {
     const {source: target, message: {callId}} = request;
 

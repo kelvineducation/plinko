@@ -24,7 +24,8 @@ const ExtensionDriver = {
 
     Object.assign(driver, {
       browser: chrome || browser,
-      scriptType
+      scriptType,
+      onMessageCallback: null,
     });
 
     return driver;
@@ -52,7 +53,7 @@ const ExtensionDriver = {
   },
 
   setupListener(receiveMessage) {
-    this.browser.runtime.onMessage.addListener((message, sender) => {
+    this.onMessageCallback = (message, sender) => {
       if (this.scriptType !== message.targetScriptType) {
         return;
       }
@@ -63,7 +64,9 @@ const ExtensionDriver = {
       }
 
       receiveMessage(source, message.plinkoMessage);
-    });
+    };
+
+    this.browser.runtime.onMessage.addListener(this.onMessageCallback);
   },
 
   sendMessage(target, message) {
@@ -73,7 +76,13 @@ const ExtensionDriver = {
     }
 
     sendTabMessage.call(this, target, message);
-  }
+  },
+
+  dispose() {
+    if (this.onMessageCallback) {
+      this.browser.runtime.onMessage.removeListener(this.onMessageCallback);
+    }
+  },
 };
 
 export default ExtensionDriver;
